@@ -87,8 +87,8 @@ def Add_Cube(collect, Name, x, y, z, mat1, mat2, mat3):
     o.data.materials.append(mat3)
 
     # Little bevel is always a nice idea for a cube
-    modifier = oc.modifiers.new(name="Bevel", type='BEVEL')
-    bpy.ops.object.modifier_apply(apply_as='DATA', modifier="Bevel")
+    bpy.ops.object.modifier_add(type="BEVEL")
+    bpy.ops.object.modifier_apply(modifier="BEVEL")
 
     collect_to_unlink = find_collection(bpy.context, o)
     collect.objects.link(o)
@@ -103,7 +103,7 @@ def applyBoolean(obj_A, obj_B, Type):
     boo = obj_A.modifiers.new(type='BOOLEAN', name="booh")
     boo.object = obj_B
     boo.operation = Type
-    bpy.ops.object.modifier_apply(apply_as='DATA', modifier="booh")
+    bpy.ops.object.modifier_apply(modifier="booh")
     bpy.ops.object.select_all(action='DESELECT')
     bpy.data.objects[obj_B.name].select_set(True)
     bpy.ops.object.delete()
