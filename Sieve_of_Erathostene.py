@@ -7,9 +7,9 @@ import random
 # ********************************************************************
 # Sieve_of_Erathostene
 # Blender version = 2.8
-# Author = Doc OuatZat (DOZ) and by the way is creator (Patrick M)
-# Web Site = docouatzat.com
-# Mail = docouatzat@gmail.com
+# Author = Patochun (Patrick M)
+# Web Site = patochun.wordpress.com
+# Mail = ptkmgr@gmail.com
 #
 # Licence used = Creative Commons CC BY
 # Check licence here : https://creativecommons.org
