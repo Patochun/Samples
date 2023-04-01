@@ -6,7 +6,7 @@ import random
 
 # ********************************************************************
 # X_Modulo_2D
-# Blender version = 2.8
+# Blender version = 2.8 to 3.5
 # Author = Patochun (Patrick M)
 # Web Site = patochun.wordpress.com
 # Mail = ptkmgr@gmail.com
