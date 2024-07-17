@@ -6,7 +6,7 @@ import random
 
 # ********************************************************************
 # Sieve_of_Erathostene
-# Blender version = 2.8 to 3.5
+# Blender version = 2.8 to 4.2
 # Author = Patochun (Patrick M)
 # Web Site = patochun.wordpress.com
 # Mail = ptkmgr@gmail.com
