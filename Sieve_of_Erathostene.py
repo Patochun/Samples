@@ -88,8 +88,8 @@ def add_cube(collect, name, x, y, z, mat1):
     o.data.materials.append(mat1)
 
     # Little bevel is always a nice idea for a cube
-#    bpy.ops.object.modifier_add(type="BEVEL")
-#    bpy.ops.object.modifier_apply(modifier="BEVEL")
+    bpy.ops.object.modifier_add(type="BEVEL")
+    bpy.ops.object.modifier_apply(modifier="BEVEL")
 
     collect_to_unlink = find_collection(bpy.context, o)
     collect.objects.link(o)
