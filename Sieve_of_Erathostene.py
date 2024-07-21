@@ -15,7 +15,7 @@ import numpy as np
 # Generate animation of Sieve of Erathostene
 # Master variables :
 #   bigCubeEdge = Mean the number of cubes by edge of the big cube.
-#                 4 is the default value. Feel free to choose yours.
+#                 5 is the default value. Feel free to choose yours.
 #                 but keep in mind the consumed ressource and time.
 #
 # Notes : The frame rate chosen for the animation is 25 frames per second.
