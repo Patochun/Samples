@@ -181,7 +181,7 @@ def CreateInkSplashes(inkSplashCount, framesCount):
     # Init
     xStart = 150    # xStart => Most left node position for x
     yStart = 0      # yStart => Most upper node position for y
-    xSpace = 100    # xSpace => spacing between nodes horinzontally
+    xSpace = 100    # xSpace => spacing between nodes horizontally
     ySpace = 25     # ySpace => spacing between nodes vertically
 
     result = ""
