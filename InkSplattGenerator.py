@@ -13,7 +13,7 @@ Compatibility : DaVinci Resolve v18
 Licence used : Creative Commons CC BY
 Check licence here : https://creativecommons.org
 
-Exemple d'utilisation:
+Usage :
     python inkSplashGenerator.py [inkSplashCount] [framesCount]
     
     inkSplashCount => between 8 to 128 provide the bests results
