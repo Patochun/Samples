@@ -7,7 +7,7 @@ import random
 # X_Modulo_3D
 # Blender version = 2.8 to 4.2
 # Author = Patochun (Patrick M)
-# Web Site = patochun.wordpress.com
+# YT : https://www.youtube.com/channel/UCCNXecgdUbUChEyvW3gFWvw
 # Mail = ptkmgr@gmail.com
 #
 # Licence used = Creative Commons CC BY

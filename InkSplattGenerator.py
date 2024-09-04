@@ -5,7 +5,7 @@ Generates ink splashes for Davinci Resolve fusion module
 
 Author   : Patochun (Patrick M)
 Mail     : ptkmgr@gmail.com
-Web Site : patochun.wordpress.com
+YT : https://www.youtube.com/channel/UCCNXecgdUbUChEyvW3gFWvw
 Create   : 2024-04-20
 Version  : 1.0
 Compatibility : DaVinci Resolve v18
