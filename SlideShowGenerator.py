@@ -7,7 +7,7 @@ Author   : Patochun (Patrick M)
 Mail     : ptkmgr@gmail.com
 YT : https://www.youtube.com/channel/UCCNXecgdUbUChEyvW3gFWvw
 Create   : 2024-10-13
-Version  : 4.0
+Version  : 5.0
 Compatibility : DaVinci Resolve v19
 
 Licence used : Creative Commons CC BY
