@@ -6,7 +6,7 @@ import numpy as np
 # Sieve_of_Erathostene
 # Blender version = 2.8 to 4.2
 # Author = Patochun (Patrick M)
-# YT : https://www.youtube.com/channel/UCCNXecgdUbUChEyvW3gFWvw
+# YT : https://youtu.be/nUsW3Qj5uVo
 # Mail = ptkmgr@gmail.com
 #
 # Licence used = Creative Commons CC BY

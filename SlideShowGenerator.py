@@ -5,7 +5,7 @@ Generates a video slide show with a folder of pictures
 
 Author   : Patochun (Patrick M)
 Mail     : ptkmgr@gmail.com
-YT : https://www.youtube.com/channel/UCCNXecgdUbUChEyvW3gFWvw
+YT : https://youtu.be/3ZgGHNesucU
 Create   : 2024-10-13
 Version  : 5.0
 Compatibility : DaVinci Resolve v19
@@ -37,8 +37,8 @@ import numpy as np
 
 # Global Variable
 # Dirty coding to avoid the use of class instead of mutable string in function capability
-curText = "global"
-curLayer = "global"
+gCurText = "global"
+gCurLayer = "global"
 
 # Template definitions
 # @xxxx@ are variables
@@ -283,7 +283,7 @@ templateMultiMergeStart = """
                         [0] = 1
                         } }, },
                 Background = Input {
-                    SourceOp = "@nameBG@",
+                    SourceOp = "@namePaper@",
                     Source = "Output",
                 },
                 EffectMask = Input {
@@ -554,20 +554,20 @@ templateMediaOut = """
 # functions
 # --------------------------------------------------------
 def setValue( valueName, value):
-    global curText
+    global gCurText
     valueName = "@" + valueName + "@"
     if isinstance( value, str):
-        curText = curText.replace( valueName, value)
+        gCurText = gCurText.replace( valueName, value)
     else:
-        curText = curText.replace( valueName, str(value))
+        gCurText = gCurText.replace( valueName, str(value))
 
 def setValueLayer( valueName, value):
-    global curLayer
+    global gCurLayer
     valueName = "@" + valueName + "@"
     if isinstance( value, str):
-        curLayer = curLayer.replace( valueName, value)
+        gCurLayer = gCurLayer.replace( valueName, value)
     else:
-        curLayer = curLayer.replace( valueName, str(value))
+        gCurLayer = gCurLayer.replace( valueName, str(value))
 
 def get_jpeg_dimensions(filename):
     with open(filename, 'rb') as f:
@@ -595,14 +595,14 @@ def CreateSlideShow(folder, displayTime, travelTime, resolution):
     Generate davinci resolve setting fusion file.
 
     Note:
-        The XMargin variable allows you to specify the size of the margin
+        The xMargin variable allows you to specify the size of the margin
 
     Returns:
         NA
     """
     # ---------------------------------------------------------------
-    global curText
-    global curLayer
+    global gCurText
+    global gCurLayer
     
     print("folder :", folder)
     print("display time : ", displayTime)
@@ -617,9 +617,10 @@ def CreateSlideShow(folder, displayTime, travelTime, resolution):
         refXSize = 1920
         refYSize = 1080
 
-    Xmargin = 300 
-    Ymargin = Xmargin # BUG Davinci about erratic displacement in no square space
-    ExtMargin = 4 * Xmargin
+    FPS = 30
+    xMargin = 300 
+    yMargin = xMargin # BUG Davinci about erratic displacement in no square space
+    extMargin = 4 * xMargin
 
     # Check folder exist
     if not os.path.exists(folder):
@@ -641,16 +642,16 @@ def CreateSlideShow(folder, displayTime, travelTime, resolution):
     files.sort()
 
     # Init
-    xStart = 150    # xStart => Most left node position for x
-    yStart = 0      # yStart => Most upper node position for y
-    xSpace = 125    # xSpace => spacing between nodes horizontally
-    ySpace = 50     # ySpace => spacing between nodes vertically
+    posXStart = 150    # posXStart => Most left node position for x
+    posYStart = 0      # posYStart => Most upper node position for y
+    posXSpace = 125    # posXSpace => spacing between nodes horizontally
+    posYSpace = 50     # posYSpace => spacing between nodes vertically
 
     result = ""
     
     # Main loop
-    currentX = xStart
-    currentY = yStart
+    currentPosX = posXStart
+    currentPosY = posYStart
 
     fourBackSlashes = "\\\\"
     twoBackSlashes = "\\"
@@ -690,39 +691,40 @@ def CreateSlideShow(folder, displayTime, travelTime, resolution):
         imageFile = folder + twoBackSlashes + file
         dimensions = get_jpeg_dimensions(imageFile)
         if dimensions:
-            width, height = dimensions
+            imageWidth, imageHeight = dimensions
         else:
             # if error reading dimension, assume reference size
-            width = refYSize
-            height = refYSize
+            imageWidth = refYSize
+            imageHeight = refYSize
 
         filesCount += 1
         # Store image dimension
-        imageInfos[filesCount,6] = width
-        imageInfos[filesCount,7] = height
+        imageInfos[filesCount,6] = imageWidth
+        imageInfos[filesCount,7] = imageHeight
 
         # Append the Loader node
-        curText = templateLoader
+        gCurText = templateLoader
         nameLoader = "Loader_" + str(filesCount)
         setValue( "Name", nameLoader)
         pathFile = folder + twoBackSlashes + file
         pathFile = pathFile.replace(twoBackSlashes, fourBackSlashes)
         setValue( "FileName", pathFile)
         setValue( "SourceOp", "")
-        setValue( "OperatorInfoPosX", currentX)
-        setValue( "OperatorInfoPosY", currentY)
-        result = result + curText[:-1] + ","
-        
-        currentY += ySpace
-        currentX = xStart
+        setValue( "OperatorInfoPosX", currentPosX)
+        setValue( "OperatorInfoPosY", currentPosY)
+        result = result + gCurText[:-1] + ","
+        currentPosY += posYSpace
+        currentPosX = posXStart
 
-    currentX += (3*xSpace)
-    currentY = yStart
+    currentPosX += (3*posXSpace)
+    currentPosY = posYStart
 
+    # Place initial direction
     travelDir = 3
     # Place initial coordinates to center of grid
     x = 11
     y = 11
+    # Place values out of array
     minX = 1000
     minY = 1000
     maxX = 0
@@ -746,8 +748,8 @@ def CreateSlideShow(folder, displayTime, travelTime, resolution):
         if (grid[testX,testY] == 0):
             travelDir = travelDirTest
         # apply the move and store image number in the grid and memorize pathlong
-        deltaX = (refXSize + Xmargin) * abs(int(dir[travelDir,0])) * (imageNumber != 1)
-        deltaY = (refYSize + Ymargin) * abs(int(dir[travelDir,1])) * (imageNumber != 1)
+        deltaX = (refXSize + xMargin) * abs(int(dir[travelDir,0])) * (imageNumber != 1)
+        deltaY = (refYSize + yMargin) * abs(int(dir[travelDir,1])) * (imageNumber != 1)
         deltaXY = deltaX + deltaY
         pathLong += deltaXY
         # Move the coordinate into table grid and imageInfos
@@ -769,36 +771,35 @@ def CreateSlideShow(folder, displayTime, travelTime, resolution):
     sizeTabY = maxY - minY + 1
 
     # Generate Background Paper
-    curText = templatePaper
-    nameBG = "Paper"
-    setValue( "Name", nameBG)
-    backGroundWidth = max (((sizeTabX * refXSize) + ((sizeTabX + 1) * Xmargin)), ((sizeTabY * refYSize) + ((sizeTabY + 1) * Ymargin)))
-    backGroundWidth += 2 * ExtMargin
+    gCurText = templatePaper
+    namePaper = "Paper"
+    setValue( "Name", namePaper)
+    backGroundWidth = max (((sizeTabX * refXSize) + ((sizeTabX + 1) * xMargin)), ((sizeTabY * refYSize) + ((sizeTabY + 1) * yMargin)))
+    backGroundWidth += 2 * extMargin
     # Height = Width accordingly to the fusion BUG on displacement calculation
     backGroundHeight = backGroundWidth
     setValue( "BGWidth", backGroundWidth)
     setValue( "BGHeight", backGroundHeight)
-    setValue( "OperatorInfoPosX", currentX)
-    setValue( "OperatorInfoPosY", yStart)
-    result = result + curText[:-1] + ","
-    currentY = ((filesCount - 1) / 2) * ySpace
+    setValue( "OperatorInfoPosX", currentPosX)
+    setValue( "OperatorInfoPosY", posYStart)
+    result = result + gCurText[:-1] + ","
+    currentPosY = ((filesCount - 1) / 2) * posYSpace
 
     # Generate multimerging node
     namePaintMask = "PaintMasK"
-
-    curText = templateMultiMergeStart
+    gCurText = templateMultiMergeStart
     nameMultiMerge = "MultiMerging"
     setValue( "Name", nameMultiMerge)
-    setValue( "nameBG", "PaperBrightnessContrast") # Be aware, not a variable
+    setValue( "namePaper", "PaperBrightnessContrast") # Be aware, not a variable
     setValue( "maskName", namePaintMask)
-    result = result + curText[:-1] + ","
+    result = result + gCurText[:-1] + ","
 
-    curText = ""
+    gCurText = ""
     layerNumber = 0
     caracterSeparator = ","
     for i in range(filesCount):
         layerNumber += 1
-        curLayer = templateMultiMergeLayer
+        gCurLayer = templateMultiMergeLayer
         setValueLayer( "LayerX", "Layer" + str(layerNumber))
         setValueLayer( "InputNode", "Loader_" + str(layerNumber))
         setValueLayer( "SourceMode", "Output")
@@ -807,48 +808,45 @@ def CreateSlideShow(folder, displayTime, travelTime, resolution):
         # determine position X, mean the center of image expressed as a fraction of the background image width
         indX = int(imageInfos[layerNumber,0]) - minX # indice X from 0 to n
         posX = indX * refXSize
-        posX = posX + (Xmargin * (indX + 1))
+        posX = posX + (xMargin * (indX + 1))
         posX = posX + refXSize // 2 # center of image
         imageInfos[layerNumber,2] = posX
-        posX += ExtMargin
+        posX += extMargin
         posX = posX / backGroundWidth
 
         # determine position Y, mean the center of image expressed as a fraction of the background image height
         indY = int(imageInfos[layerNumber,1]) - minY # indice Y from 0 to n
         posY = indY * refYSize
-        posY = posY + (Ymargin * (indY + 1))
+        posY = posY + (yMargin * (indY + 1))
         posY = posY + refYSize // 2 # center of image
         imageInfos[layerNumber,3] = posY
-        posY += ExtMargin
+        posY += extMargin
         posY = posY / backGroundHeight
 
         # determine scale
         deltaX = int(imageInfos[layerNumber,6]) / refXSize
         deltaY = int(imageInfos[layerNumber,7]) / refYSize
         if deltaX > deltaY:
-            scale = 1 / deltaX # refXSize / int(size[layerNumber,0])
+            scale = 1 / deltaX
         else:
-            scale = 1 / deltaY # refYSize / int(size[layerNumber,1])
+            scale = 1 / deltaY
 
         setValueLayer( "PosX", posX)
         setValueLayer( "PosY", posY)
         setValueLayer( "Size", scale)
-
-        # if layerNumber == filesCount:
-        #     caracterSeparator = ""
-        curText += curLayer[:-1]
-        curText += caracterSeparator
+        gCurText += gCurLayer[:-1]
+        gCurText += caracterSeparator
     
-    result = result + curText[:-1] + ","
+    result = result + gCurText[:-1] + ","
 
-    curText = templateMultiMergeEnd
-    setValue( "OperatorInfoPosX", currentX)
-    setValue( "OperatorInfoPosY", currentY)
-    result = result + curText[:-1] + ","
-    currentX += xSpace
+    gCurText = templateMultiMergeEnd
+    setValue( "OperatorInfoPosX", currentPosX)
+    setValue( "OperatorInfoPosY", currentPosY)
+    result = result + gCurText[:-1] + ","
+    currentPosX += posXSpace
 
     # Generate polyPath for merge_control
-    curText = templatePolyPathStart
+    gCurText = templatePolyPathStart
     namePolyPathMerge = "PolyPathMultiMerge"
     nameDisplacement = namePolyPathMerge + "_Displacement"
     setValue( "Name", namePolyPathMerge)
@@ -858,19 +856,19 @@ def CreateSlideShow(folder, displayTime, travelTime, resolution):
         layerNumber = i+1
         newLine = templateLine
         # for multimerge X and Y must be relative to global size
-        pointX = (int(imageInfos[layerNumber,2] + ExtMargin) / backGroundWidth -0.5)
-        pointY = (int(imageInfos[layerNumber,3] + ExtMargin) / backGroundHeight -0.5)
+        pointX = (int(imageInfos[layerNumber,2] + extMargin) / backGroundWidth -0.5)
+        pointY = (int(imageInfos[layerNumber,3] + extMargin) / backGroundHeight -0.5)
         newLine = newLine.replace("@valX@",str(pointX))
         newLine = newLine.replace("@valY@",str(pointY))
         # newLine = newLine.replace("@valRX@","0")
         # newLine = newLine.replace("@valRY@","0")
-        curText += newLine
+        gCurText += newLine
     
-    curText += templatePolyPathEnd
-    result = result + curText[:-1] + ","
+    gCurText += templatePolyPathEnd
+    result = result + gCurText[:-1] + ","
 
     # Generate Displacement Path for multimerge_control
-    curText = templatePathDisplacementStart
+    gCurText = templatePathDisplacementStart
     setValue( "Name", nameDisplacement)
     templateLine = "				[@XFrame@] = { @YValue@, Flags = { Linear = true } },"
     XFrame = 0
@@ -880,19 +878,19 @@ def CreateSlideShow(folder, displayTime, travelTime, resolution):
         newLine = templateLine
         newLine = newLine.replace("@XFrame@",str(XFrame))
         newLine = newLine.replace("@YValue@",str(YValue))
-        curText += newLine
-        XFrame += 30 * displayTime
+        gCurText += newLine
+        XFrame += FPS * displayTime
         newLine = templateLine
         newLine = newLine.replace("@XFrame@",str(XFrame))
         newLine = newLine.replace("@YValue@",str(YValue))
-        curText += newLine
-        XFrame += 30 * travelTime
+        gCurText += newLine
+        XFrame += FPS * travelTime
         DX = int(imageInfos[imageNumber + 1, 4])
         DY = int(imageInfos[imageNumber + 1, 5])
         YValue += (DX + DY) / pathLong
       
-    curText += templatePathDisplacementEnd
-    result = result + curText[:-1] + ","
+    gCurText += templatePathDisplacementEnd
+    result = result + gCurText[:-1] + ","
 
     # Generate Stroke
     imageNumber = 0
@@ -901,118 +899,110 @@ def CreateSlideShow(folder, displayTime, travelTime, resolution):
         imageNumber += 1
         
         # Generate Stroke End
-        curText = templateStrokeEnd
+        gCurText = templateStrokeEnd
         nameStrokeBrush = "StrokeEnd" + str(imageNumber)
         setValue( "Name", nameStrokeBrush)
         templateLine = "				[@FrameNumber@] = { @YPos@, Flags = { Linear = true } },"
-        frameStart = (imageNumber -1) * ((displayTime + travelTime) * 30)
-        frameStart += - travelTime * 30 // 4
-        frameEnd = frameStart + 30
+        frameStart = (imageNumber -1) * ((displayTime + travelTime) * FPS)
+        frameStart += - travelTime * FPS // 4
+        frameEnd = frameStart + FPS
         newLine = templateLine
         newLine = newLine.replace("@FrameNumber@",str(frameStart))
         newLine = newLine.replace("@YPos@","0")
-        curText += newLine
+        gCurText += newLine
         newLine = templateLine
         newLine = newLine.replace("@FrameNumber@",str(frameEnd))
         newLine = newLine.replace("@YPos@","1")
-        curText += newLine
-        result = result + curText
-        curText = templateStrokeEndEnd
-        result = result + curText[:-1] + ","
+        gCurText += newLine
+        result = result + gCurText
+        gCurText = templateStrokeEndEnd
+        result = result + gCurText[:-1] + ","
 
         # Generate Stroke main
-        curText = TemplateStroke
+        gCurText = TemplateStroke
         nameStroke = "Stroke" + str(imageNumber)
         setValue( "Name", nameStroke)
         setValue( "StrokePrev", strokePrevName)
         setValue( "StrokeEnd", nameStrokeBrush)
-        imgCenterX = int(imageInfos[imageNumber,2] + ExtMargin)/backGroundWidth
-        imgCenterY = int(imageInfos[imageNumber,3] + ExtMargin)/backGroundHeight
+        imgCenterX = int(imageInfos[imageNumber,2] + extMargin)/backGroundWidth
+        imgCenterY = int(imageInfos[imageNumber,3] + extMargin)/backGroundHeight
         setValue( "CenterX", imgCenterX)
         setValue( "CenterY", imgCenterY)
 
-        # Generate Stroke Line
-        imgSizeX = refXSize / backGroundWidth
-        imgSizeY = refYSize / backGroundHeight
-
-        for j in range(10):
-            randX = imgSizeX - random.uniform(0.0, imgSizeX)
-            randY = imgSizeY - random.uniform(0.0, imgSizeY)
-
         strokePrevName = nameStroke
-        result = result + curText[:-1] + ","
+        result = result + gCurText[:-1] + ","
 
     # Generate PaintMask with Stroke test
-    curText = TemplatePaintMask
+    gCurText = TemplatePaintMask
     setValue( "Name", namePaintMask)
     setValue( "MaskWidth", backGroundWidth)
     setValue( "MaskHeight", backGroundHeight)
     setValue( "SoftEdge", 0.008)
     setValue( "SrcOp", nameStroke)
-    setValue( "OperatorInfoPosX", currentX)
-    setValue( "OperatorInfoPosY", currentY + ySpace)
-    result = result + curText[:-1] + ","
+    setValue( "OperatorInfoPosX", currentPosX)
+    setValue( "OperatorInfoPosY", currentPosY + posYSpace)
+    result = result + gCurText[:-1] + ","
 
     # Generate rectangle for the mergeCtrl
-    curText = templateRectangle
+    gCurText = templateRectangle
     nameRectangle = "RectangleControl"
     setValue( "Name", nameRectangle)
     setValue( "MaskWidth", refXSize)
     setValue( "MaskHeight", refYSize)
     setValue( "WidthRatio", 1.3)
     setValue( "HeightRatio", 1.3)
-    setValue( "OperatorInfoPosX", currentX)
-    setValue( "OperatorInfoPosY", currentY - 2 * ySpace)
-    result = result + curText[:-1] + ","
+    setValue( "OperatorInfoPosX", currentPosX)
+    setValue( "OperatorInfoPosY", currentPosY - 2 * posYSpace)
+    result = result + gCurText[:-1] + ","
 
     # Generate mergeCtrl
-    curText = templateMerge
+    gCurText = templateMerge
     nameMerge = "MergeCtrl"
     setValue( "Name", nameMerge)
     setValue( "Blend", 0.5)
     setValue( "BG-SrcOp", nameMultiMerge)
     setValue( "FG-SrcOp", nameRectangle)
     setValue( "Center-SrcOp", namePolyPathMerge)
-    setValue( "OperatorInfoPosX", currentX)
-    setValue( "OperatorInfoPosY", currentY - ySpace)
-    result = result + curText[:-1] + ","
-    currentX += xSpace
+    setValue( "OperatorInfoPosX", currentPosX)
+    setValue( "OperatorInfoPosY", currentPosY - posYSpace)
+    result = result + gCurText[:-1] + ","
+    currentPosX += posXSpace
 
     # Generate Calculations
-    curText = templateCalcType2
+    gCurText = templateCalcType2
     nameCalcX2 = "CalcX2"
     setValue( "Name", nameCalcX2)
     setValue( "Expression", nameMerge + ".Center.X")
     setValue( "Operator", 2) # multiply
     setValue( "SecondOperandValue", backGroundWidth)
-    result = result + curText[:-1] + ","
+    result = result + gCurText[:-1] + ","
 
-    curText = templateCalcType2
+    gCurText = templateCalcType2
     nameCalcY2 = "CalcY2"
     setValue( "Name", nameCalcY2)
     setValue( "Expression", nameMerge + ".Center.Y")
     setValue( "Operator", 2) # multiply
     setValue( "SecondOperandValue", backGroundHeight)
-    result = result + curText[:-1] + ","
+    result = result + gCurText[:-1] + ","
 
-    curText = templateCalcType1
+    gCurText = templateCalcType1
     nameCalcX1 = "CalcX1"
     setValue( "Name", nameCalcX1)
     setValue( "Src-Op", nameCalcX2)
     setValue( "Operator", 1) # substract
     setValue( "SecondOperandValue", (refXSize*1.3) / 2)
-    result = result + curText[:-1] + ","
+    result = result + gCurText[:-1] + ","
 
-    curText = templateCalcType1
+    gCurText = templateCalcType1
     nameCalcY1 = "CalcY1"
     setValue( "Name", nameCalcY1)
     setValue( "Src-Op", nameCalcY2)
     setValue( "Operator", 1) # substract
     setValue( "SecondOperandValue", (refYSize*1.3) / 2)
-    result = result + curText[:-1] + ","
+    result = result + gCurText[:-1] + ","
 
     # Generate Cropping
-    curText = templateCrop
+    gCurText = templateCrop
     nameCropping = "Cropping"
     setValue( "Name", nameCropping)
     setValue( "XOffset-SrcOp", nameCalcX1)
@@ -1020,15 +1010,15 @@ def CreateSlideShow(folder, displayTime, travelTime, resolution):
     setValue( "XOffset-TypeSrc", "Result")
     setValue( "YOffset-TypeSrc", "Result")
     setValue( "XSize", refXSize * 1.3) # 30% margin
-    setValue( "YSize", refYSize * 1.3)
+    setValue( "YSize", refYSize * 1.3) # 30% margin
     setValue( "Input-SrcOp", nameMultiMerge)
-    setValue( "OperatorInfoPosX", currentX)
-    setValue( "OperatorInfoPosY", currentY)
-    result = result + curText[:-1] + ","
-    currentX += xSpace
+    setValue( "OperatorInfoPosX", currentPosX)
+    setValue( "OperatorInfoPosY", currentPosY)
+    result = result + gCurText[:-1] + ","
+    currentPosX += posXSpace
 
     # Generate BezierSpline Transform Size
-    curText = templateBezierSpline
+    gCurText = templateBezierSpline
     nameBSTransformSize = "BSTransformSize"
     setValue( "Name", nameBSTransformSize)
     setValue( "Red", 0)
@@ -1039,43 +1029,43 @@ def CreateSlideShow(folder, displayTime, travelTime, resolution):
     for i in range(filesCount - 1):
         imageNumber = i+1
         newLine = templateLine
-        NumFrame += displayTime * 30
+        NumFrame += displayTime * FPS
         newLine = newLine.replace("@NumFrame@",str(NumFrame))
         newLine = newLine.replace("@Size@",str(1.3))
-        curText += newLine
-        NumFrame += travelTime * 30 / 2
+        gCurText += newLine
+        NumFrame += travelTime * FPS / 2
         newLine = templateLine
         newLine = newLine.replace("@NumFrame@",str(NumFrame))
         newLine = newLine.replace("@Size@",str(1))
-        curText += newLine
-        NumFrame += travelTime * 30 / 2
+        gCurText += newLine
+        NumFrame += travelTime * FPS / 2
         newLine = templateLine
         newLine = newLine.replace("@NumFrame@",str(NumFrame))
         newLine = newLine.replace("@Size@",str(1.3))
-        curText += newLine
+        gCurText += newLine
 
-    curText += templateBezierSplineEnd
-    result = result + curText[:-1] + ","
+    gCurText += templateBezierSplineEnd
+    result = result + gCurText[:-1] + ","
 
     # Generate Transform
-    curText = templateTransform
+    gCurText = templateTransform
     nameTransform = "Transform"
     setValue( "Name", nameTransform)
     setValue( "SrcOpSize", nameBSTransformSize)
     setValue( "SrcOpInput", nameCropping)
-    setValue( "OperatorInfoPosX", currentX)
-    setValue( "OperatorInfoPosY", currentY)
-    result = result + curText[:-1] + ","
-    currentX += xSpace
+    setValue( "OperatorInfoPosX", currentPosX)
+    setValue( "OperatorInfoPosY", currentPosY)
+    result = result + gCurText[:-1] + ","
+    currentPosX += posXSpace
 
     # Generate MediaOut
-    curText = templateMediaOut
+    gCurText = templateMediaOut
     nameMediaOut = "MediaOut1"
     setValue( "Name", nameMediaOut)
     setValue( "SourceOp", nameTransform)
-    setValue( "OperatorInfoPosX", currentX)
-    setValue( "OperatorInfoPosY", currentY)
-    result = result + curText[:-1] + ","
+    setValue( "OperatorInfoPosX", currentPosX)
+    setValue( "OperatorInfoPosY", currentPosY)
+    result = result + gCurText[:-1] + ","
 
     # Set starting and ending Text
     result = templateStart[:-1] + result
