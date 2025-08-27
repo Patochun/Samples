@@ -13,7 +13,7 @@ import random
 # Licence used = Creative Commons CC BY
 # Check licence here : https://creativecommons.org
 #
-# Generate Multiplication by Modulo version 2D
+# Generate Multiplication by Modulo version 3D
 # Master variables :
 #   Nb_Modulo     Modulo apply to multiplication
 #   TableMulti    Multiplication table
@@ -53,7 +53,7 @@ def Points_Sphere(samples, randomizer):
 # ------------------
 
 # Create a new collection
-newCol = create_collection("XModulo2D", bpy.context.scene.collection)
+newCol = create_collection("XModulo3D", bpy.context.scene.collection)
 
 Nb_Modulo = 1000
 TableMulti = 2
