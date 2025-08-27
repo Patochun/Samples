@@ -4,7 +4,7 @@ import numpy as np
 
 # ********************************************************************
 # Sieve_of_Erathostene
-# Blender version = 2.8 to 4.2
+# Blender version = above 2.8
 # Author = Patochun (Patrick M)
 # YT : https://youtu.be/nUsW3Qj5uVo
 # Mail = ptkmgr@gmail.com
